@@ -1,5 +1,6 @@
 package br.com.ifba.usuario.service;
 
+import br.com.ifba.infrastructure.exception.BusinessException;
 import br.com.ifba.usuario.entity.Usuario;
 import br.com.ifba.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,9 @@ public class UsuarioService implements UsuarioIService {
 
     // Salva um novo usuário no banco de dados.
     public Usuario save(Usuario usuario) {
+        if (usuario.getId() != null && usuarioRepository.existsById(usuario.getId())) {
+            throw new BusinessException("Usuário já existente.");
+        }
         return usuarioRepository.save(usuario);
     }
 
@@ -30,20 +34,24 @@ public class UsuarioService implements UsuarioIService {
     // Edita um usuário já existente no banco de dados.
     @Override
     public Usuario update(Usuario usuario) {
-        if(usuarioRepository.findById(usuario.getId()).isPresent()) {
-            return usuarioRepository.save(usuario);
-        } else throw new RuntimeException("Usuário não encontrado");
+        if (!usuarioRepository.existsById(usuario.getId())) {
+            throw new BusinessException("Usuário não encontrado.");
+        }
+        return usuarioRepository.save(usuario);
     }
 
     // Deleta um usuário no banco de dados.
     public void delete(Long id) {
-        if(usuarioRepository.existsById(id)) {
-            usuarioRepository.delete(this.findById(id));
+        if(!usuarioRepository.existsById(id)) {
+            throw new BusinessException("Usuário não encontrado.");
         }
+        usuarioRepository.delete(this.findById(id));
     }
 
     // Busca um usuário por ID.
     public Usuario findById(Long id) {
-        return usuarioRepository.findById(id).get();
+        return usuarioRepository.findById(id).orElseThrow(
+                () -> new BusinessException("Usuário não encontrado.")
+        );
     }
 }
