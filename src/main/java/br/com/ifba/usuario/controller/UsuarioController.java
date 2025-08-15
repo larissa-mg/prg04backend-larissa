@@ -1,46 +1,51 @@
 package br.com.ifba.usuario.controller;
 
 import br.com.ifba.usuario.entity.Usuario;
+import br.com.ifba.usuario.service.UsuarioIService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 // Define controlador REST que retorna dados no formato JSON/XML
 @RestController
 // Mapeia todas as URLs deste controller para começar com '/usuarios'
 @RequestMapping(path = "/usuarios")
+@RequiredArgsConstructor
 public class UsuarioController {
 
-    // Lista para armazenar usuários
-    private final List<Usuario> usuarios = new ArrayList<>();
+    private final UsuarioIService usuarioService;
 
-    // Construtor que inicializa a lista com 3 usuários
-    public UsuarioController() {
-        usuarios.add(new Usuario("João Silva", "joao@email.com", "123"));
-        usuarios.add(new Usuario("Maria Souza", "maria@email.com", "123"));
-        usuarios.add(new Usuario("Carlos Oliveira", "carlos@email.com", "123"));
+    // Endpoint POST para salvar um novo usuário.
+    @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> save(@RequestBody Usuario usuario) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.save(usuario));
     }
 
-    // Endpoint GET para retornar todos os usuários
-    // URL: GET http://localhost:8080/usuarios
-    @GetMapping
-    public ResponseEntity<List<Usuario>> getAll() {
-        // Retorna a lista de usuários com status HTTP 200 (OK)
-        return ResponseEntity.ok(usuarios);
+    // Endpoint GET para retornar todos os usuários.
+    @GetMapping(path = "/findall", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findAll() {
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findAll());
     }
 
-    // Endpoint POST para criar um novo usuário
-    // URL: POST http://localhost:8080/usuarios
-    @PostMapping
-    public ResponseEntity<Usuario> create(@RequestBody Usuario usuario) {
-        // Gera um ID simples baseado no tamanho atual da lista
-        usuario.setId((long) (usuarios.size() + 1));
-        usuarios.add(usuario);
+    // Endpoint PUT para atualizar um usuário existente.
+    @PutMapping(path = "/update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> update(@RequestBody Usuario usuario) {
+        usuarioService.update(usuario);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
-        // Retorna o usuário criado com status HTTP 201 (CREATED)
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+    // Endpoint DELETE para remover um usuário.
+    @DeleteMapping(path = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+        usuarioService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Endpoint GET para buscar um único usuário por ID.
+    @GetMapping(path = "/findbyid/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findById(@PathVariable("id") Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(usuarioService.findById(id));
     }
 }
