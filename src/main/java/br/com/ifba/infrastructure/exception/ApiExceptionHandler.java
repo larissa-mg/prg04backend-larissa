@@ -1,19 +1,25 @@
 package br.com.ifba.infrastructure.exception;
 
-// Importa classes para manipulação de exceções e requisições.
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 // Permite que a classe lide com exceções de qualquer controlador REST na aplicação.
 @RestControllerAdvice
-public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+@Slf4j
+public class ApiExceptionHandler {
 
     // Verificação para incluir o stacktrace na resposta de erro.
     @Value(value = "${server.error.include-exception}")
@@ -28,7 +34,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final String mensagemErro = businessException.getMessage();
 
         // Registra a mensagem e a exceção para depuração.
-        logger.error(mensagemErro, businessException);
+        log.error(mensagemErro, businessException);
 
         // Retorna a resposta de erro, delegando a construção do objeto de erro.
         return construirMensagemDeErro(
@@ -39,8 +45,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
-    @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     private ResponseEntity<Object> construirMensagemDeErro(
             final BusinessException exception,
             final String message,
@@ -58,5 +62,36 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
         // Retorna o ResponseEntity com o status e o corpo de erro.
         return ResponseEntity.status(httpStatus).body(errorResponse);
+    }
+
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<ValidationExceptionDetails> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException methodArgumentNotValidException) {
+
+        // Extrai a lista de erros de validação do objeto de exceção.
+        List<FieldError> fieldErrors = methodArgumentNotValidException
+                .getBindingResult().getFieldErrors();
+
+        // Coleta os nomes dos campos com erro em uma única string.
+        String fields = fieldErrors.stream().map(FieldError::getField)
+                .collect(Collectors.joining(", "));
+
+        // Coleta as mensagens de erro de cada campo em uma única string.
+        String fieldsMessage = fieldErrors.stream().map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+
+        // Constrói e retorna o objeto de resposta de erro padronizado (DTO).
+        return new ResponseEntity<>(
+                ValidationExceptionDetails.builder()
+                        .timestamp(LocalDateTime.now())
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .title("Bad Request Exception, Campos inválidos.")
+                        .details("Cheque o(s) campo(s) com erros")
+                        .developerMessage(methodArgumentNotValidException.getClass().getName())
+                        .fields(fields)
+                        .fieldsMessage(fieldsMessage)
+                        .build(), HttpStatus.BAD_REQUEST
+        );
     }
 }

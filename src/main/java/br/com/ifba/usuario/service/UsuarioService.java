@@ -5,6 +5,7 @@ import br.com.ifba.usuario.entity.Usuario;
 import br.com.ifba.usuario.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +20,8 @@ public class UsuarioService implements UsuarioIService {
     private final UsuarioRepository usuarioRepository;
 
     // Salva um novo usuário no banco de dados.
+    @Override
+    @Transactional
     public Usuario save(Usuario usuario) {
         if (usuario.getId() != null && usuarioRepository.existsById(usuario.getId())) {
             throw new BusinessException("Usuário já existente.");
@@ -27,12 +30,15 @@ public class UsuarioService implements UsuarioIService {
     }
 
     // Retorna uma lista com todos os usuários do banco de dados.
+    @Override
+    @Transactional(readOnly = true)
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();
     }
 
     // Edita um usuário já existente no banco de dados.
     @Override
+    @Transactional
     public Usuario update(Usuario usuario) {
         if (!usuarioRepository.existsById(usuario.getId())) {
             throw new BusinessException("Usuário não encontrado.");
@@ -41,6 +47,8 @@ public class UsuarioService implements UsuarioIService {
     }
 
     // Deleta um usuário no banco de dados.
+    @Override
+    @Transactional
     public void delete(Long id) {
         if(!usuarioRepository.existsById(id)) {
             throw new BusinessException("Usuário não encontrado.");
@@ -49,6 +57,8 @@ public class UsuarioService implements UsuarioIService {
     }
 
     // Busca um usuário por ID.
+    @Override
+    @Transactional(readOnly = true)
     public Usuario findById(Long id) {
         return usuarioRepository.findById(id).orElseThrow(
                 () -> new BusinessException("Usuário não encontrado.")
