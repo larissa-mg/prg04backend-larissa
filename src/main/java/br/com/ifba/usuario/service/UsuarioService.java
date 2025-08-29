@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /*
  * Classe de Serviço que gerencia a lógica de negócio para a entidade Usuario.
@@ -63,5 +64,14 @@ public class UsuarioService implements UsuarioIService {
         return usuarioRepository.findById(id).orElseThrow(
                 () -> new BusinessException("Usuário não encontrado.")
         );
+    }
+
+    @Override
+    public Usuario findByEmailAndSenha(String email, String senha) {
+        Optional<Usuario> usuario = usuarioRepository.findByEmailAndSenha(email, senha);
+        if (usuario.isEmpty()) {
+            throw new BusinessException("Usuário não encontrado.");
+        }
+        return usuario.get();
     }
 }

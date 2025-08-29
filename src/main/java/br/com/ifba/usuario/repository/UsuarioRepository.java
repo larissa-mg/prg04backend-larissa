@@ -4,11 +4,13 @@ import br.com.ifba.usuario.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /*
  * Interface de Repositório que fornece métodos para operações CRUD
  * com a entidade Usuario.
  */
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
-
+    Optional<Usuario> findByEmailAndSenha(String email, String senha);
 }

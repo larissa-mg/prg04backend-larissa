@@ -32,7 +32,7 @@ public class Poema extends PersistenceEntity implements Serializable {
     private String conteudo;
 
     @Column(name = "data_publicacao", nullable = false)
-    private String dataPublicacao;
+    private Integer dataPublicacao;
 
     // Relacionamento muitos para um: muitos poemas podem ser de um único poeta.
     // @JoinColumn cria uma coluna 'poeta_id' na tabela 'poemas' para a chave estrangeira.

@@ -1,6 +1,7 @@
 package br.com.ifba.usuario.controller;
 
 import br.com.ifba.infrastructure.mapper.ObjectMapperUtil;
+import br.com.ifba.usuario.dto.LoginRequestDto;
 import br.com.ifba.usuario.dto.UsuarioGetResponseDto;
 import br.com.ifba.usuario.dto.UsuarioPostRequestDto;
 import br.com.ifba.usuario.entity.Usuario;
@@ -12,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:3000")
 // Define controlador REST que retorna dados no formato JSON/XML
 @RestController
 // Mapeia todas as URLs deste controller para começar com '/usuarios'
@@ -67,5 +69,15 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.OK).body(objectMapperUtil.map(
                 usuarioService.findById(id),
                 UsuarioGetResponseDto.class));
+    }
+
+    @PostMapping(path = "/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginDto) {
+        try {
+            Usuario usuario = usuarioService.findByEmailAndSenha(loginDto.getEmail(), loginDto.getSenha());
+            return ResponseEntity.status(HttpStatus.OK).body(objectMapperUtil.map(usuario, UsuarioGetResponseDto.class));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

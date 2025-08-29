@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioGetResponseDto {
 
+    @JsonProperty(value = "id")
+    private Long id;
+
     // O nome do usuário
     @JsonProperty(value = "nome")
     private String nome;

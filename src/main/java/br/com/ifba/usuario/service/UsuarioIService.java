@@ -11,4 +11,5 @@ public interface UsuarioIService {
     public abstract Usuario update(Usuario usuario);
     public abstract void delete(Long id);
     public abstract Usuario findById(Long id);
+    public abstract Usuario findByEmailAndSenha(String email, String senha);
 }
